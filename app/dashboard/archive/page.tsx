@@ -17,7 +17,7 @@ interface ArchivePageProps {
 }
 
 export default async function ArchivePage({ searchParams }: ArchivePageProps) {
-  const { userId } = auth();
+  const { userId } = await auth();
 
   if (!userId) {
     redirect("/sign-in");

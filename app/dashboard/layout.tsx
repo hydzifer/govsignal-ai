@@ -10,12 +10,12 @@ const navItems = [
   { label: "Settings", href: "/dashboard/settings", icon: "⚙" },
 ];
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { userId } = auth();
+  const { userId } = await auth();
 
   if (!userId) {
     redirect("/sign-in");

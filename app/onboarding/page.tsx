@@ -4,7 +4,7 @@ import { supabaseServer } from "@/lib/supabase-server";
 import OnboardingForm from "@/components/OnboardingForm";
 
 export default async function OnboardingPage() {
-  const { userId } = auth();
+  const { userId } = await auth();
 
   if (!userId) {
     redirect("/sign-in");

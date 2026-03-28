@@ -10,7 +10,7 @@ import Badge from "@/components/ui/Badge";
 const FREE_ARTICLE_LIMIT = 5;
 
 export default async function DashboardPage() {
-  const { userId } = auth();
+  const { userId } = await auth();
 
   if (!userId) {
     redirect("/sign-in");
