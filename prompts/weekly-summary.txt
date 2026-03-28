@@ -1,0 +1,33 @@
+You are summarizing AI policy developments for senior executives.
+
+Create a weekly summary from these articles:
+
+ARTICLES:
+{{articles}}
+
+Generate markdown summary (300-400 words):
+
+## Week of {{dateRange}}
+
+### Major Developments
+[3-5 bullet points highlighting most significant updates]
+
+### By Region
+
+**EU**: [2-3 sentences on EU developments]
+
+**US Federal**: [2-3 sentences on US federal activity]
+
+**US State**: [If applicable, otherwise skip]
+
+**Infrastructure**: [If applicable: chips, compute, data centers]
+
+### Looking Ahead
+[1-2 sentences: upcoming deadlines, expected announcements]
+
+RULES:
+- Prioritize high-impact developments first
+- Group related developments together
+- Be specific: include names, dates, numbers
+- Maximum 400 words
+- Skip sections with no relevant updates

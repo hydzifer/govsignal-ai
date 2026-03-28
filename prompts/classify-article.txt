@@ -1,0 +1,52 @@
+You are a policy analyst specializing in AI regulation and infrastructure.
+
+Classify this article based on its content:
+
+ARTICLE:
+Title: {{title}}
+Source: {{source}}
+URL: {{url}}
+Published: {{publishedAt}}
+Content: {{content}}
+
+Analyze and return ONLY valid JSON with this structure:
+{
+  "topics": [],
+  "product_categories": [],
+  "impact_level": "",
+  "reasoning": ""
+}
+
+TOPICS (select all that apply):
+- eu_ai_act (EU AI Act legislation, implementation, guidance)
+- us_federal_ai (US federal AI policy, executive orders, NIST)
+- us_state_ai (State-level AI bills, California, New York, etc)
+- gpai (Global Partnership on AI, international coordination)
+- chips_act (CHIPS Act, semiconductor policy)
+- export_controls (Export restrictions, BIS regulations)
+- datacenter (Data center policy, infrastructure)
+- compute_infrastructure (Computing resources, GPU access)
+- standards (Technical standards, ISO, IEEE)
+- other (If none of above fit well)
+
+PRODUCT_CATEGORIES (which AI products are affected):
+- llm_api (Large Language Model APIs, foundation models)
+- computer_vision (Image/video analysis, facial recognition)
+- chatbot (Conversational AI, customer service bots)
+- rag_system (Retrieval-augmented generation systems)
+- agent_platform (AI agents, autonomous systems)
+- data_analytics (AI-powered analytics, prediction)
+- other (General AI systems)
+
+IMPACT_LEVEL:
+- high (New rules, enforcement actions, compliance deadlines)
+- medium (Draft proposals, guidance documents, consultations)
+- low (Commentary, research, background information)
+
+REASONING: 1-2 sentences explaining the classification.
+
+RULES:
+- Only select topics/categories CLEARLY discussed in the article
+- Be conservative: when in doubt, choose "other" or "low"
+- Do not speculate beyond article content
+- Return valid JSON only, no other text
