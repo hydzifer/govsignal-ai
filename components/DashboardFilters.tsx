@@ -33,7 +33,7 @@ export default function DashboardFilters({
     return true;
   });
 
-  const activeTopicIds = [...new Set(articles.flatMap((a) => a.topics || []))];
+  const activeTopicIds = Array.from(new Set(articles.flatMap((a) => a.topics || [])));
   const activeTopics = TOPICS.filter((t) => activeTopicIds.includes(t.id));
 
   const hasFilters = search || impactFilter || topicFilter;
