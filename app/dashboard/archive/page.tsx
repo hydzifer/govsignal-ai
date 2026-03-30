@@ -9,14 +9,15 @@ import { TOPICS } from "@/lib/constants/topics";
 const ARTICLES_PER_PAGE = 20;
 
 interface ArchivePageProps {
-  searchParams: {
+  searchParams: Promise<{
     page?: string;
     impact?: string;
     topic?: string;
-  };
+  }>;
 }
 
-export default async function ArchivePage({ searchParams }: ArchivePageProps) {
+export default async function ArchivePage({ searchParams: searchParamsPromise }: ArchivePageProps) {
+  const searchParams = await searchParamsPromise;
   const { userId } = await auth();
 
   if (!userId) {

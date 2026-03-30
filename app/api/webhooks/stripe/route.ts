@@ -6,7 +6,7 @@ import { supabaseServer } from "@/lib/supabase-server";
 
 export async function POST(request: Request) {
   const body = await request.text();
-  const signature = headers().get("stripe-signature");
+  const signature = (await headers()).get("stripe-signature");
 
   if (!signature) {
     return NextResponse.json({ error: "No signature" }, { status: 400 });

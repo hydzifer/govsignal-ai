@@ -56,7 +56,8 @@ export async function POST(request: Request) {
 
         for (const userPref of enabledUsers) {
           try {
-            const clerkUser = await (await clerkClient()).users.getUser(
+            const clerk = await clerkClient();
+            const clerkUser = await clerk.users.getUser(
               userPref.clerk_user_id
             );
             const email = clerkUser.emailAddresses[0]?.emailAddress;
