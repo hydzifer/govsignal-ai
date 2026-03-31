@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import Stripe from "stripe";
+import { getRequiredEnv } from "@/lib/env";
 import { stripe } from "@/lib/stripe";
 import { supabaseServer } from "@/lib/supabase-server";
 
@@ -18,7 +19,7 @@ export async function POST(request: Request) {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
+      getRequiredEnv("STRIPE_WEBHOOK_SECRET")
     );
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Verification failed";

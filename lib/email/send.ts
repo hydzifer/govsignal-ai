@@ -1,13 +1,22 @@
 import { Resend } from "resend";
+import { getAppUrl, hasResendEnv, getRequiredEnv } from "@/lib/env";
 import { Article } from "@/types/database";
 import { renderDailyDigest } from "./templates/daily-digest";
 import { renderWatchlistAlert } from "./templates/watchlist-alert";
 import { generateUnsubscribeToken } from "./unsubscribe";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resendClient: Resend | null = null;
+
+function getResendClient(): Resend {
+  if (!resendClient) {
+    resendClient = new Resend(getRequiredEnv("RESEND_API_KEY"));
+  }
+
+  return resendClient;
+}
 
 const FROM_EMAIL = "GovSignal AI <digest@govsignal.ai>";
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const APP_URL = getAppUrl();
 
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 1000;
@@ -18,7 +27,13 @@ async function sendEmail(
   html: string,
   retries = MAX_RETRIES
 ): Promise<boolean> {
+  if (!hasResendEnv()) {
+    console.error("[Email] RESEND_API_KEY is missing");
+    return false;
+  }
+
   try {
+    const resend = getResendClient();
     const { error } = await resend.emails.send({
       from: FROM_EMAIL,
       to,
@@ -61,7 +76,7 @@ export async function sendDailyDigest(
   });
 
   const articleCount = articles.length;
-  const subject = `${articleCount} AI policy update${articleCount !== 1 ? "s" : ""} today — GovSignal AI`;
+  const subject = `${articleCount} AI policy update${articleCount !== 1 ? "s" : ""} today - GovSignal AI`;
 
   return sendEmail(user.email, subject, html);
 }
@@ -87,7 +102,7 @@ export async function sendWatchlistAlert(
   });
 
   const topicLabel = topic.replace(/_/g, " ");
-  const subject = `New update on ${topicLabel} — GovSignal AI`;
+  const subject = `New update on ${topicLabel} - GovSignal AI`;
 
   return sendEmail(user.email, subject, html);
 }

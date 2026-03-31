@@ -1,4 +1,10 @@
 import Link from "next/link";
+import {
+  Show,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+} from "@clerk/nextjs";
 import Hero from "@/components/landing/Hero";
 import FeatureCard from "@/components/landing/FeatureCard";
 import PricingCard from "@/components/landing/PricingCard";
@@ -103,7 +109,6 @@ const faqs = [
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
-      {/* Nav */}
       <nav className="border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <span className="text-xl font-bold text-gray-900">GovSignal AI</span>
@@ -114,15 +119,39 @@ export default function LandingPage() {
             >
               Pricing
             </Link>
-            <Link
-              href="/sign-in"
-              className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Sign In
-            </Link>
-            <Button href="/sign-up" size="sm">
-              Start Free Trial
-            </Button>
+
+            <Show when="signed-out">
+              <div className="flex items-center gap-4">
+                <SignInButton>
+                  <button
+                    type="button"
+                    className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                  >
+                    Sign In
+                  </button>
+                </SignInButton>
+                <SignUpButton>
+                  <button
+                    type="button"
+                    className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                  >
+                    Start Free Trial
+                  </button>
+                </SignUpButton>
+              </div>
+            </Show>
+
+            <Show when="signed-in">
+              <div className="flex items-center gap-4">
+                <Link
+                  href="/dashboard"
+                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  Dashboard
+                </Link>
+                <UserButton />
+              </div>
+            </Show>
           </div>
         </div>
       </nav>

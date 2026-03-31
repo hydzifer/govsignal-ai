@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase-server";
+import { getUserPreference } from "@/lib/user-preferences";
 
 const VALID_CATEGORIES = [
   "llm_api",
@@ -30,14 +31,23 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if user already has preferences
-    const { data: existing } = await supabaseServer
-      .from("user_preferences")
-      .select("id")
-      .eq("clerk_user_id", userId)
-      .limit(1);
+    const { data: existing, error: existingError } = await getUserPreference(
+      userId
+    );
 
-    if (existing && existing.length > 0) {
+    if (existingError) {
+      console.error("[api/onboarding] Failed to load preferences", {
+        userId,
+        error: existingError,
+      });
+
+      return NextResponse.json(
+        { error: "Failed to load existing preferences" },
+        { status: 500 }
+      );
+    }
+
+    if (existing) {
       // Update existing
       const { error } = await supabaseServer
         .from("user_preferences")
@@ -63,6 +73,25 @@ export async function POST(request: Request) {
           daily_digest_enabled: true,
           watchlist_alerts_enabled: true,
         });
+
+      if (error?.code === "23505") {
+        const { error: updateError } = await supabaseServer
+          .from("user_preferences")
+          .update({
+            product_category,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("clerk_user_id", userId);
+
+        if (!updateError) {
+          return NextResponse.json({ success: true });
+        }
+
+        return NextResponse.json(
+          { error: "Failed to update preferences" },
+          { status: 500 }
+        );
+      }
 
       if (error) {
         return NextResponse.json(

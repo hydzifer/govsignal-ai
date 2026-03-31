@@ -2,6 +2,10 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase-server";
 import { formatFullDate } from "@/lib/utils/date";
+import {
+  getUserPreference,
+  hasActiveSubscription,
+} from "@/lib/user-preferences";
 import ArticleCard from "@/components/ArticleCard";
 import SubscriptionGate from "@/components/SubscriptionGate";
 import DashboardFilters from "@/components/DashboardFilters";
@@ -16,23 +20,24 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
-  // Get user preferences
-  const { data: prefs } = await supabaseServer
-    .from("user_preferences")
-    .select("product_category, subscription_status")
-    .eq("clerk_user_id", userId)
-    .single();
+  const { data: prefs, error } = await getUserPreference(userId, [
+    "subscription_status",
+  ]);
+
+  if (error) {
+    throw new Error("Failed to load dashboard preferences");
+  }
 
   if (!prefs) {
     redirect("/onboarding");
   }
 
-  const isSubscribed =
-    prefs.subscription_status === "active" ||
-    prefs.subscription_status === "trial";
+  const isSubscribed = hasActiveSubscription(prefs.subscription_status);
 
   // Fetch articles from last 24 hours with source name
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const sinceDate = new Date();
+  sinceDate.setHours(sinceDate.getHours() - 24);
+  const since = sinceDate.toISOString();
 
   const { data: articles } = await supabaseServer
     .from("articles")

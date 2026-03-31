@@ -1,6 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase-server";
+import {
+  getUserPreference,
+  hasActiveSubscription,
+} from "@/lib/user-preferences";
 import ArticleCard from "@/components/ArticleCard";
 import SubscriptionGate from "@/components/SubscriptionGate";
 import Badge from "@/components/ui/Badge";
@@ -24,26 +28,28 @@ export default async function ArchivePage({ searchParams: searchParamsPromise }:
     redirect("/sign-in");
   }
 
-  const { data: prefs } = await supabaseServer
-    .from("user_preferences")
-    .select("subscription_status")
-    .eq("clerk_user_id", userId)
-    .single();
+  const { data: prefs, error } = await getUserPreference(userId, [
+    "subscription_status",
+  ]);
+
+  if (error) {
+    throw new Error("Failed to load archive preferences");
+  }
 
   if (!prefs) {
     redirect("/onboarding");
   }
 
-  const isSubscribed =
-    prefs.subscription_status === "active" ||
-    prefs.subscription_status === "trial";
+  const isSubscribed = hasActiveSubscription(prefs.subscription_status);
 
   const page = Math.max(1, parseInt(searchParams.page || "1", 10));
   const impactFilter = searchParams.impact || "";
   const topicFilter = searchParams.topic || "";
 
   // Older than 24h
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const sinceDate = new Date();
+  sinceDate.setHours(sinceDate.getHours() - 24);
+  const since = sinceDate.toISOString();
 
   let query = supabaseServer
     .from("articles")

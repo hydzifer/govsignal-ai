@@ -1,13 +1,20 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import { ClerkProvider } from "@clerk/nextjs";
+import { hasClerkEnv } from "@/lib/env";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const geistSans = localFont({
+  src: "./fonts/GeistVF.woff",
+  weight: "100 900",
+  display: "swap",
+});
+
+const clerkEnabled = hasClerkEnv();
 
 export const metadata: Metadata = {
   title: {
-    default: "GovSignal AI — AI Policy Monitoring",
+    default: "GovSignal AI - AI Policy Monitoring",
     template: "%s | GovSignal AI",
   },
   description:
@@ -21,7 +28,7 @@ export const metadata: Metadata = {
     "AI governance",
   ],
   openGraph: {
-    title: "GovSignal AI — AI Policy Monitoring",
+    title: "GovSignal AI - AI Policy Monitoring",
     description:
       "Track AI policy before it hits your business. Monitor EU & US AI regulation with instant, role-specific briefings.",
     url: "https://govsignal.ai",
@@ -31,7 +38,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "GovSignal AI — AI Policy Monitoring",
+    title: "GovSignal AI - AI Policy Monitoring",
     description:
       "Track AI policy before it hits your business. Daily briefings on EU & US AI regulation.",
   },
@@ -48,10 +55,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased bg-white text-gray-900`}>
-        <ClerkProvider afterSignOutUrl="/">
-          {children}
-        </ClerkProvider>
+      <body
+        className={`${geistSans.className} antialiased bg-white text-gray-900`}
+      >
+        {clerkEnabled ? (
+          <ClerkProvider afterSignOutUrl="/">{children}</ClerkProvider>
+        ) : (
+          children
+        )}
       </body>
     </html>
   );

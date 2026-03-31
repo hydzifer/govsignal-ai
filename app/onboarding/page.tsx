@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { supabaseServer } from "@/lib/supabase-server";
+import { getUserPreference } from "@/lib/user-preferences";
 import OnboardingForm from "@/components/OnboardingForm";
 
 export default async function OnboardingPage() {
@@ -10,14 +10,13 @@ export default async function OnboardingPage() {
     redirect("/sign-in");
   }
 
-  // Check if user already has preferences set
-  const { data: existing } = await supabaseServer
-    .from("user_preferences")
-    .select("id")
-    .eq("clerk_user_id", userId)
-    .limit(1);
+  const { data: existing, error } = await getUserPreference(userId);
 
-  if (existing && existing.length > 0) {
+  if (error) {
+    throw new Error("Failed to load onboarding state");
+  }
+
+  if (existing) {
     redirect("/dashboard");
   }
 

@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { supabaseServer } from "@/lib/supabase-server";
+import { getUserPreference } from "@/lib/user-preferences";
 import { createCustomerPortalSession } from "@/lib/stripe";
 
 export async function POST() {
@@ -11,11 +11,13 @@ export async function POST() {
   }
 
   try {
-    const { data: prefs } = await supabaseServer
-      .from("user_preferences")
-      .select("stripe_customer_id")
-      .eq("clerk_user_id", userId)
-      .single();
+    const { data: prefs, error } = await getUserPreference(userId, [
+      "stripe_customer_id",
+    ]);
+
+    if (error) {
+      throw new Error(error);
+    }
 
     if (!prefs?.stripe_customer_id) {
       return NextResponse.json(

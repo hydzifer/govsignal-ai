@@ -1,6 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase-server";
+import {
+  getUserPreference,
+  hasActiveSubscription,
+} from "@/lib/user-preferences";
 
 const FREE_LIMIT = 3;
 const PAID_LIMIT = 20;
@@ -19,15 +23,15 @@ export async function GET(request: NextRequest) {
   }
 
   // Check subscription status
-  const { data: prefs } = await supabaseServer
-    .from("user_preferences")
-    .select("subscription_status")
-    .eq("clerk_user_id", userId)
-    .single();
+  const { data: prefs, error: prefsError } = await getUserPreference(userId, [
+    "subscription_status",
+  ]);
 
-  const isSubscribed =
-    prefs?.subscription_status === "active" ||
-    prefs?.subscription_status === "trial";
+  if (prefsError) {
+    return NextResponse.json({ error: prefsError }, { status: 500 });
+  }
+
+  const isSubscribed = hasActiveSubscription(prefs?.subscription_status);
 
   const limit = isSubscribed ? PAID_LIMIT : FREE_LIMIT;
 

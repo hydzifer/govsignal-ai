@@ -1,6 +1,6 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { supabaseServer } from "@/lib/supabase-server";
+import { getUserPreference } from "@/lib/user-preferences";
 import { createCheckoutSession } from "@/lib/stripe";
 
 export async function POST() {
@@ -10,8 +10,9 @@ export async function POST() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const user = await currentUser();
-  const email = user?.emailAddresses[0]?.emailAddress;
+  const clerk = await clerkClient();
+  const user = await clerk.users.getUser(userId);
+  const email = user.emailAddresses[0]?.emailAddress;
 
   if (!email) {
     return NextResponse.json({ error: "No email found" }, { status: 400 });
@@ -19,11 +20,13 @@ export async function POST() {
 
   try {
     // Check for existing Stripe customer ID
-    const { data: prefs } = await supabaseServer
-      .from("user_preferences")
-      .select("stripe_customer_id")
-      .eq("clerk_user_id", userId)
-      .single();
+    const { data: prefs, error } = await getUserPreference(userId, [
+      "stripe_customer_id",
+    ]);
+
+    if (error) {
+      throw new Error(error);
+    }
 
     const session = await createCheckoutSession(
       userId,
