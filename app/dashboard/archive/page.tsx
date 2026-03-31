@@ -33,7 +33,7 @@ export default async function ArchivePage({ searchParams: searchParamsPromise }:
   ]);
 
   if (error) {
-    throw new Error("Failed to load archive preferences");
+    console.error("[Archive] Failed to load preferences:", error);
   }
 
   if (!prefs) {

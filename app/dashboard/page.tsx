@@ -25,7 +25,7 @@ export default async function DashboardPage() {
   ]);
 
   if (error) {
-    throw new Error("Failed to load dashboard preferences");
+    console.error("[Dashboard] Failed to load preferences:", error);
   }
 
   if (!prefs) {
