@@ -151,15 +151,67 @@ export async function GET() {
       }
     }
 
-    // 4. Update last_fetched timestamp on sources
+    // 4. Classify any previously unclassified articles
+    const { data: unclassified } = await supabaseServer
+      .from("articles")
+      .select("id, title, url, raw_content")
+      .is("impact_level", null)
+      .order("published_at", { ascending: false })
+      .limit(20);
+
+    if (unclassified && unclassified.length > 0) {
+      for (const article of unclassified) {
+        try {
+          const classification = await classifyArticle({
+            title: article.title,
+            content: article.raw_content || "",
+            url: article.url,
+          });
+
+          const impactNote = await generateImpactNote(
+            article as any,
+            classification
+          );
+
+          const { error: updateError } = await supabaseServer
+            .from("articles")
+            .update({
+              topics: classification.topics,
+              product_categories: classification.product_categories,
+              impact_level: classification.impact_level,
+              impact_note: impactNote,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", article.id);
+
+          if (!updateError) {
+            result.classified++;
+            classifiedArticleIds.push(article.id);
+          } else {
+            result.errors.push(
+              `Backfill update failed for "${article.title}": ${updateError.message}`
+            );
+          }
+
+          await sleep(CLASSIFY_DELAY_MS);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          result.errors.push(
+            `Backfill classification failed for "${article.title}": ${msg}`
+          );
+        }
+      }
+    }
+
+    // 5. Update last_fetched timestamp on sources
     await supabaseServer
       .from("sources")
       .update({ last_fetched: new Date().toISOString() })
       .eq("active", true);
 
-    // 5. Fire-and-forget: trigger watchlist alerts for new articles
+    // 6. Fire-and-forget: trigger watchlist alerts for new articles
     if (classifiedArticleIds.length > 0) {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      const appUrl = getAppUrl();
       fetch(`${appUrl}/api/email/send-alerts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -178,3 +230,4 @@ export async function GET() {
     );
   }
 }
+import { getAppUrl } from "@/lib/env";
