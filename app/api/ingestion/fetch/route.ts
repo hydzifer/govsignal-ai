@@ -5,6 +5,7 @@ import { classifyArticle, generateImpactNote } from "@/lib/claude";
 import { TIER1_SOURCES } from "@/lib/ingestion/sources";
 import { Source } from "@/types/database";
 import { IngestionResult } from "@/types/ingestion";
+import { getAppUrl } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 
@@ -230,4 +231,3 @@ export async function GET() {
     );
   }
 }
-import { getAppUrl } from "@/lib/env";
