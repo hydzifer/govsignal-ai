@@ -1,18 +1,24 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { Article, Classification } from "@/types/database";
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-});
-
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
+
+function getClient(): Anthropic {
+  const apiKey = process.env.ANTHROPIC_API_KEY?.trim();
+  if (!apiKey) {
+    throw new Error("ANTHROPIC_API_KEY is missing");
+  }
+  return new Anthropic({ apiKey });
+}
 
 async function callClaude(
   systemPrompt: string,
   userMessage: string,
   retries = MAX_RETRIES
 ): Promise<string> {
+  const anthropic = getClient();
+
   try {
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
